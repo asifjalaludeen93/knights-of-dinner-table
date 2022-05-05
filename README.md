@@ -2,8 +2,8 @@
 
 ## Tech information
 - Java 11(Amazon Corretto)
-- Maven
-- Log4j
+- Maven 3.6.3
+- Log4j 2.13
 
 
 ## Solution
