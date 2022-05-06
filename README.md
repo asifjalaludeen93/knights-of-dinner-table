@@ -2,8 +2,8 @@
 
 ## Tech information
 - Java 11(Amazon Corretto)
-- Maven 3.6.3
-- Log4j 2.13
+- Maven
+- Log4j
 
 
 ## Solution
@@ -12,7 +12,8 @@
 - Calculate the happiness score between each and every person at the table by extracting the score from the input file
 - Store the relation and their happiness score in a map
 - Get the permutation of all the persons
-- Find the optimal seating score by iterating through all the permutations and adding the scores.
+- Find the optimal seating score by iterating through all the permutations and adding the scores
+- Repeat the calculation process by including another person(myself) with score as 0
 
 
 ## Installation

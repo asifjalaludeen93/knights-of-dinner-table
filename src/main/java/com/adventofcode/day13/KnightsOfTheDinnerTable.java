@@ -1,12 +1,14 @@
 package com.adventofcode.day13;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +18,7 @@ public class KnightsOfTheDinnerTable {
 
 	private List<String> inputData;
 	private final Pattern NUMBER = Pattern.compile("\\d+");
+	private final String COMMA = ",";
 
 	public KnightsOfTheDinnerTable(File input) {
 		inputData = Utils.fileToStringList(input);
@@ -28,11 +31,14 @@ public class KnightsOfTheDinnerTable {
 			String filePath = args[0];
 			logger.info("Input file path - {}", filePath);
 			KnightsOfTheDinnerTable tableArrangement = new KnightsOfTheDinnerTable(new File(filePath));
-			System.out.println("The total change in happiness with optimal seat arrangement is: "+tableArrangement.run());
+			System.out.println(
+					"The total change in happiness with optimal seat arrangement is: " + tableArrangement.part1());
+			System.out.println("The total change in happiness with optimal seat arrangement including myself is: "
+					+ tableArrangement.part2());
 		}
 	}
 
-	public int run() {
+	public int part1() {
 		logger.info("Optimal seating arrangement calculation started");
 		String[] people = inputData.stream().map(s -> s.split(" ", 2)[0]).distinct().toArray(String[]::new);
 		Map<String, Integer> happinessTable = calculateHappinessScore();
@@ -41,6 +47,27 @@ public class KnightsOfTheDinnerTable {
 		List<String> permutations = Utils.getPermutation(people);
 
 		return findMaxSeating(happinessTable, permutations);
+	}
+
+	public int part2() {
+		logger.info("Optimal seating arrangement calculation by including myself started");
+		String myself = "X";
+		List<String> peopleList = inputData.stream().map(s -> s.split(" ", 2)[0]).distinct()
+				.collect(Collectors.toList());
+		peopleList.add(myself);
+		String[] people = peopleList.toArray(String[]::new);
+		Map<String, Integer> happinessTable = calculateHappinessScore();
+		Map<String, Integer> tmpHappinessTable = new HashMap<>();
+		happinessTable.entrySet().stream().forEach(e -> {
+			tmpHappinessTable.putIfAbsent(myself + COMMA + e.getKey().split(COMMA)[0], 0);
+			tmpHappinessTable.putIfAbsent(e.getKey().split(COMMA)[0] + COMMA + myself, 0);
+			tmpHappinessTable.putIfAbsent(myself + COMMA + e.getKey().split(COMMA)[1], 0);
+			tmpHappinessTable.putIfAbsent(e.getKey().split(COMMA)[1] + COMMA + myself, 0);
+		});
+		happinessTable.putAll(tmpHappinessTable);
+		List<String> seatingPermutations = Utils.getPermutation(people);
+
+		return findMaxSeating(happinessTable, seatingPermutations);
 	}
 
 	private Map<String, Integer> calculateHappinessScore() {
@@ -63,10 +90,10 @@ public class KnightsOfTheDinnerTable {
 					numA = currentRelation.contains("gain") ? numA : -numA;
 					int numB = Integer.parseInt(matcherB.group());
 					numB = cmpRelationship.contains("gain") ? numB : -numB;
-					happinessScore.putIfAbsent(currentPerson + "," + targetPerson, numA + numB);
-					logger.debug("Relation: {} Happiness score: {}", currentPerson + "," + targetPerson, numA + numB);
-					happinessScore.putIfAbsent(targetPerson + "," + currentPerson, numA + numB);
-					logger.debug("Relation: {} Happiness score: {}", targetPerson + "," + currentPerson, numA + numB);
+					happinessScore.putIfAbsent(currentPerson + COMMA + targetPerson, numA + numB);
+					logger.debug("Relation: {} Happiness score: {}", currentPerson + COMMA + targetPerson, numA + numB);
+					happinessScore.putIfAbsent(targetPerson + COMMA + currentPerson, numA + numB);
+					logger.debug("Relation: {} Happiness score: {}", targetPerson + COMMA + currentPerson, numA + numB);
 				}
 			}
 		}
@@ -82,9 +109,9 @@ public class KnightsOfTheDinnerTable {
 			int sum = 0;
 			for (int i = 0; i < currentSeating.length; i++) {
 				if (i == currentSeating.length - 1) {
-					sum += happinessScore.get(currentSeating[0] + "," + currentSeating[i]);
+					sum += happinessScore.get(currentSeating[0] + COMMA + currentSeating[i]);
 				} else {
-					sum += happinessScore.get(String.join(",", Arrays.copyOfRange(currentSeating, i, i + 2)));
+					sum += happinessScore.get(String.join(COMMA, Arrays.copyOfRange(currentSeating, i, i + 2)));
 				}
 			}
 			if (max < sum)
